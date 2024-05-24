@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-import { CommonData } from '../common.module';
+import { CommonData } from '../user.module';
 
 @Entity()
 export class User {

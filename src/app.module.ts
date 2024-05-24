@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user.module';
-import { CommonData } from './common/common.module';
+import { CommonData } from './models/user.module';
 import { ConfigModule } from '@nestjs/config';
 
 const appModules = [UserModule, CommonData];
