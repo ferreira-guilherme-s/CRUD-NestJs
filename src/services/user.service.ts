@@ -40,34 +40,22 @@ export class UserService {
   }
 
   //Função de login
-  async login(req, res) {
-    try {
-      const { email, password } = req.body;
-      if (!email || !password) {
-        return res.status(400).send('Email and password are required');
-      }
-
-      const user = await this.findOneByEmail(email);
-      if (!user) {
-        return res.status(401).send('Invalid Credentials');
-      }
-
-      const validPassword = await this.comparePasswords(
-        password,
-        user.password,
-      );
-      if (!validPassword) {
-        return res.status(401).send('Invalid Credentials');
-      }
-
-      const token = jwt.sign({ id: user.id }, process.env.TOKEN_SECRET, {
-        expiresIn: '1h',
-      });
-
-      return res.json({ token });
-    } catch (error) {
-      return res.status(500).json({ meesage: 'Internal Server Error' });
+  async login(email: string, password: string): Promise<string | null> {
+    const user = await this.findOneByEmail(email);
+    if (!user) {
+      return null;
     }
+
+    const validPassword = await this.comparePasswords(password, user.password);
+    if (!validPassword) {
+      return null;
+    }
+
+    const token = jwt.sign({ id: user.id }, process.env.TOKEN_SECRET, {
+      expiresIn: '1h',
+    });
+
+    return token;
   }
 
   async findOneByEmail(email: string): Promise<User | undefined> {

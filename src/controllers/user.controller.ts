@@ -6,19 +6,37 @@ import {
   Delete,
   Body,
   ValidationPipe,
+  Res,
 } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { CreateUserDTO } from 'src/dtos/create-user-dto';
 import { LoginDTO } from 'src/dtos/login-dto';
+import { Response } from 'express';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('login')
-  login(@Body(new ValidationPipe()) loginDTO: LoginDTO) {
-    const { email, password } = loginDTO;
-    return this.userService.login(email, password);
+  async login(
+    @Body(new ValidationPipe()) loginDTO: LoginDTO,
+    @Res() res: Response,
+  ) {
+    try {
+      const { email, password } = loginDTO;
+      const token = await this.userService.login(email, password);
+      if (!token || token === null) {
+        return res
+          .status(401)
+          .json({ status: 401, message: 'Invalid email or password' });
+      }
+      return res.json({ token });
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(500)
+        .json({ status: 500, message: 'Internal Server Error' });
+    }
   }
 
   @Get('getUsers')

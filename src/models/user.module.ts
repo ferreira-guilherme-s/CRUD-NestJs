@@ -1,12 +1,9 @@
-import { CreateDateColumn, UpdateDateColumn, VersionColumn } from 'typeorm';
+import { CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 export class CommonData {
   @CreateDateColumn()
-  createAt: Date;
+  created_at: Date;
 
   @UpdateDateColumn()
-  updateAt: Date;
-
-  @VersionColumn()
-  version: number;
+  updated_at: Date;
 }

@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { CommonData } from '../user.module';
 
-@Entity()
+@Entity('userTest')
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
