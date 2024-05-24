@@ -9,7 +9,7 @@ import * as jwt from 'jsonwebtoken';
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private userReposiitory: Repository<User>,
+    private userRepository: Repository<User>,
   ) {}
 
   getUsers() {
@@ -20,6 +20,7 @@ export class UserService {
     return `Get user with id ${id}`;
   }
 
+  //Função de inserção de usuário
   async addUser(name: string, email: string, password: string): Promise<User> {
     const passwordHash = bcrypt.hashSync(password, 10);
     const user = new User();
@@ -27,7 +28,7 @@ export class UserService {
     user.email = email;
     user.password = passwordHash;
 
-    return await this.userReposiitory.save(user);
+    return await this.userRepository.save(user);
   }
 
   updateUser(id: string) {
@@ -70,7 +71,7 @@ export class UserService {
   }
 
   async findOneByEmail(email: string): Promise<User | undefined> {
-    return await this.userReposiitory.findOne({ where: { email } });
+    return await this.userRepository.findOne({ where: { email } });
   }
 
   async comparePasswords(password: string, hash: string) {
