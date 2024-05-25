@@ -15,13 +15,17 @@ export class UserService {
 
   getUsers() {
     return this.userRepository.find({
-      select: ['name', 'email'],
+      select: ['id', 'name', 'email'],
     });
   }
 
   getUserByName(id: string): Promise<User | undefined> {
+    console.log('Id recebido: ', id);
     const idReplace = id.replace(`:`, '');
-    return this.userRepository.findOne({ where: { id: idReplace } });
+    return this.userRepository.findOne({
+      where: { id: idReplace },
+      select: ['id', 'name', 'email'],
+    });
   }
 
   //Função de inserção de usuário
@@ -58,7 +62,7 @@ export class UserService {
   //Função de login
   async login(email: string, password: string): Promise<string | null> {
     const user = await this.findOneByEmail(email);
-    if (!user) {
+    if (user === undefined) {
       return null;
     }
 
@@ -75,31 +79,22 @@ export class UserService {
   }
 
   async resetPassword(user: ResetPasswordDto) {
-    const { id, email, newPassword, oldPassword } = user;
-    if (id && oldPassword) {
-      const idReplace = id.replace(`:`, '');
-      const user = await this.userRepository.findOne({
-        where: { id: idReplace },
-      });
-      if (!user) {
-        return null;
-      }
-      const validPassword = await this.comparePasswords(
-        oldPassword,
-        user.password,
-      );
-      if (!validPassword) {
-        return null;
+    const { id, newPassword, oldPassword } = user;
+    console.log(user);
+    if (id !== undefined) {
+      if (oldPassword !== undefined) {
+        const user = await this.userRepository.findOne({ where: { id } });
+        const validPassword = await this.comparePasswords(
+          oldPassword,
+          user.password,
+        );
+        if (!validPassword) {
+          return null;
+        }
       }
       const passwordHash = bcrypt.hashSync(newPassword, 10);
       await this.userRepository.update({ id }, { password: passwordHash });
-    } else if (email && newPassword && !oldPassword && !id) {
-      const user = await this.userRepository.findOne({ where: { email } });
-      if (!user) {
-        return null;
-      }
-      const passwordHash = bcrypt.hashSync(newPassword, 10);
-      await this.userRepository.update({ email }, { password: passwordHash });
+      console.log('Password updated');
     }
   }
 
