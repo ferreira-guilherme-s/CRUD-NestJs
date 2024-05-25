@@ -141,14 +141,23 @@ export class UserController {
   async resetPassword(@Body() body: ResetPasswordDto, @Res() res: Response) {
     const { id, email } = body;
 
+    //Caso de reset de senha via página do usuário
     if (id !== undefined) {
       try {
-        await this.userService.resetPassword(body);
-        return res.json({
-          statusCode: 200,
-          success: true,
-          message: 'Password updated successfully',
-        });
+        const reset = await this.userService.resetPassword(body);
+        if (reset !== null) {
+          return res.json({
+            statusCode: 200,
+            success: true,
+            message: 'Password updated successfully',
+          });
+        } else {
+          return res.json({
+            statusCode: 400,
+            success: false,
+            error: 'Password not updated',
+          });
+        }
       } catch (error) {
         return res.json({
           statusCode: 400,
@@ -156,14 +165,23 @@ export class UserController {
           error: 'Password not updated',
         });
       }
-    } else if (id === undefined && email !== undefined) {
+    } //Caso de reset de senha por 'esqeuci minha senha'
+    else if (id === undefined && email !== undefined) {
       try {
-        await this.userService.resetPassword(body);
-        return res.json({
-          statusCode: 200,
-          success: true,
-          message: 'Password updated successfully',
-        });
+        const reset = await this.userService.resetPassword(body);
+        if (reset !== null) {
+          return res.json({
+            statusCode: 200,
+            success: true,
+            message: 'Password updated successfully',
+          });
+        } else {
+          return res.json({
+            statusCode: 400,
+            success: false,
+            error: 'User not found',
+          });
+        }
       } catch (error) {
         return res.json({
           statusCode: 400,
