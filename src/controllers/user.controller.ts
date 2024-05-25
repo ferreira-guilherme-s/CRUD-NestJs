@@ -190,4 +190,32 @@ export class UserController {
       }
     }
   }
+
+  @Post('getUserByEmail')
+  async getUserByEmail(@Body() body: { email: string }, @Res() res: Response) {
+    try {
+      const user = await this.userService.findOneByEmail(body.email);
+      if (user) {
+        return res.json({
+          statusCode: 200,
+          success: true,
+          data: {
+            user,
+          },
+        });
+      } else {
+        return res.json({
+          statusCode: 400,
+          success: false,
+          message: 'User not found',
+        });
+      }
+    } catch (error) {
+      return res.json({
+        statusCode: 500,
+        success: false,
+        message: 'Internal Server Error',
+      });
+    }
+  }
 }
