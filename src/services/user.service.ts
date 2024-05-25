@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { User } from 'src/models/entitites/user.entity';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
+import { ResetPasswordDto } from 'src/dtos/reset-password-dto';
 
 @Injectable()
 export class UserService {
@@ -71,6 +72,35 @@ export class UserService {
     });
 
     return token;
+  }
+
+  async resetPassword(user: ResetPasswordDto) {
+    const { id, email, newPassword, oldPassword } = user;
+    if (id && oldPassword) {
+      const idReplace = id.replace(`:`, '');
+      const user = await this.userRepository.findOne({
+        where: { id: idReplace },
+      });
+      if (!user) {
+        return null;
+      }
+      const validPassword = await this.comparePasswords(
+        oldPassword,
+        user.password,
+      );
+      if (!validPassword) {
+        return null;
+      }
+      const passwordHash = bcrypt.hashSync(newPassword, 10);
+      await this.userRepository.update({ id }, { password: passwordHash });
+    } else if (email && newPassword && !oldPassword && !id) {
+      const user = await this.userRepository.findOne({ where: { email } });
+      if (!user) {
+        return null;
+      }
+      const passwordHash = bcrypt.hashSync(newPassword, 10);
+      await this.userRepository.update({ email }, { password: passwordHash });
+    }
   }
 
   async findOneByEmail(email: string): Promise<User | undefined> {

@@ -14,6 +14,7 @@ import { CreateUserDTO } from 'src/dtos/create-user-dto';
 import { LoginDTO } from 'src/dtos/login-dto';
 import { Response } from 'express';
 import { User } from 'src/models/entitites/user.entity';
+import { ResetPasswordDto } from 'src/dtos/reset-password-dto';
 
 @Controller('users')
 export class UserController {
@@ -134,5 +135,42 @@ export class UserController {
       success: true,
       message: 'User deleted successfully',
     });
+  }
+
+  @Put('resetPassword')
+  async resetPassword(@Body() body: ResetPasswordDto, @Res() res: Response) {
+    const { id, email } = body;
+
+    if (id !== undefined) {
+      try {
+        await this.userService.resetPassword(body);
+        return res.json({
+          statusCode: 200,
+          success: true,
+          message: 'Password updated successfully',
+        });
+      } catch (error) {
+        return res.json({
+          statusCode: 400,
+          success: false,
+          error: 'Password not updated',
+        });
+      }
+    } else if (id === undefined && email !== undefined) {
+      try {
+        await this.userService.resetPassword(body);
+        return res.json({
+          statusCode: 200,
+          success: true,
+          message: 'Password updated successfully',
+        });
+      } catch (error) {
+        return res.json({
+          statusCode: 400,
+          success: false,
+          error: 'Password not updated',
+        });
+      }
+    }
   }
 }
