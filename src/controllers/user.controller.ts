@@ -13,6 +13,7 @@ import { UserService } from '../services/user.service';
 import { CreateUserDTO } from 'src/dtos/create-user-dto';
 import { LoginDTO } from 'src/dtos/login-dto';
 import { Response } from 'express';
+import { User } from 'src/models/entitites/user.entity';
 
 @Controller('users')
 export class UserController {
@@ -27,19 +28,24 @@ export class UserController {
       const { email, password } = loginDTO;
       const token = await this.userService.login(email, password);
       if (!token || token === null) {
-        return res
-          .status(401)
-          .json({ statusCode: 401, message: 'Invalid email or password' });
+        return res.status(401).json({
+          statusCode: 401,
+          success: false,
+          message: 'Invalid email or password',
+        });
       }
       return res.json({
         statusCode: 200,
+        success: true,
         token,
       });
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({ statusCode: 500, message: 'Internal Server Error' });
+      return res.status(500).json({
+        statusCode: 500,
+        success: false,
+        message: 'Internal Server Error',
+      });
     }
   }
 
@@ -50,6 +56,7 @@ export class UserController {
       const users = await this.userService.getUsers();
       return res.json({
         statusCode: 200,
+        success: true,
         data: {
           users,
         },
@@ -92,14 +99,31 @@ export class UserController {
       return res.json({
         statusCode: 400,
         success: false,
-        error: error.message,
+        error: 'User not created',
       });
     }
   }
 
   @Put('updateUser/:id')
-  updateUser(id: string) {
-    return this.userService.updateUser(id);
+  async updateUser(
+    @Param('id') id: string,
+    @Body() user: User,
+    @Res() res: Response,
+  ) {
+    try {
+      await this.userService.updateUser(id, user);
+      return res.json({
+        statusCode: 200,
+        success: true,
+        message: 'User updated successfully',
+      });
+    } catch (error) {
+      return res.json({
+        statusCode: 400,
+        success: false,
+        error: 'User not updated',
+      });
+    }
   }
 
   @Delete('deleteUser/:id')

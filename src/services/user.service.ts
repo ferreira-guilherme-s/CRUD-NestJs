@@ -34,8 +34,19 @@ export class UserService {
     return await this.userRepository.save(user);
   }
 
-  updateUser(id: string) {
-    return `Update user with id ${id}`;
+  updateUser(id: string, user: User) {
+    const userId = id.replace(`:`, '');
+    const { name, email } = user;
+    if (name !== undefined && email !== undefined) {
+      return this.userRepository.update(
+        { id: userId },
+        { name: name, email: email },
+      );
+    } else if (name !== undefined && email === undefined) {
+      return this.userRepository.update({ id: userId }, { name: name });
+    } else if (name === undefined && email !== undefined) {
+      return this.userRepository.update({ id: userId }, { email: email });
+    }
   }
 
   async deleteUser(id: string) {
