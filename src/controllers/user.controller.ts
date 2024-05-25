@@ -73,7 +73,6 @@ export class UserController {
 
   @Get('getUser/:id')
   getUser(@Param('id') id: string) {
-    console.log(name);
     return this.userService.getUserByName(id);
   }
   //inserção de usuário
