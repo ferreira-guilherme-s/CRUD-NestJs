@@ -13,11 +13,14 @@ export class UserService {
   ) {}
 
   getUsers() {
-    return 'Get all users';
+    return this.userRepository.find({
+      select: ['name', 'email'],
+    });
   }
 
-  getUser(id: string) {
-    return `Get user with id ${id}`;
+  getUserByName(id: string): Promise<User | undefined> {
+    const idReplace = id.replace(`:`, '');
+    return this.userRepository.findOne({ where: { id: idReplace } });
   }
 
   //Função de inserção de usuário
@@ -35,8 +38,9 @@ export class UserService {
     return `Update user with id ${id}`;
   }
 
-  deleteUser(id: string) {
-    return `Delete user with id ${id}`;
+  async deleteUser(id: string) {
+    const userId = id.replace(`:`, '');
+    await this.userRepository.delete({ id: userId });
   }
 
   //Função de login

@@ -7,6 +7,7 @@ import {
   Body,
   ValidationPipe,
   Res,
+  Param,
 } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { CreateUserDTO } from 'src/dtos/create-user-dto';
@@ -28,29 +29,48 @@ export class UserController {
       if (!token || token === null) {
         return res
           .status(401)
-          .json({ status: 401, message: 'Invalid email or password' });
+          .json({ statusCode: 401, message: 'Invalid email or password' });
       }
-      return res.json({ token });
+      return res.json({
+        statusCode: 200,
+        token,
+      });
     } catch (error) {
       console.error(error);
       return res
         .status(500)
-        .json({ status: 500, message: 'Internal Server Error' });
+        .json({ statusCode: 500, message: 'Internal Server Error' });
     }
   }
 
-  @Get('getUsers')
-  getUsers() {
-    return this.userService.getUsers();
+  //Realizar a busca de todos os usuários
+  @Get('getAllUsers')
+  async getUsers(@Res() res: Response) {
+    try {
+      const users = await this.userService.getUsers();
+      return res.json({
+        statusCode: 200,
+        data: {
+          users,
+        },
+      });
+    } catch (error) {
+      return res.status(500).json({
+        statusCode: 500,
+        success: false,
+        message: 'Internal Server Error',
+      });
+    }
   }
 
-  @Get('getUsers/:id')
-  getUser(id: string) {
-    return this.userService.getUser(id);
+  @Get('getUser/:id')
+  getUser(@Param('id') id: string) {
+    console.log(name);
+    return this.userService.getUserByName(id);
   }
   //inserção de usuário
   @Post('insertUser')
-  addUser(
+  async addUser(
     @Body(
       new ValidationPipe({
         transform: true,
@@ -58,13 +78,22 @@ export class UserController {
       }),
     )
     user: CreateUserDTO,
+    @Res() res: Response,
   ) {
     const { name, email, password } = user;
     try {
-      const user = this.userService.addUser(name, email, password);
-      return { success: true, data: user };
+      await this.userService.addUser(name, email, password);
+      return res.json({
+        statusCode: 201,
+        success: true,
+        message: 'User created successfully',
+      });
     } catch (error) {
-      return { success: false, error: error.message };
+      return res.json({
+        statusCode: 400,
+        success: false,
+        error: error.message,
+      });
     }
   }
 
@@ -74,7 +103,12 @@ export class UserController {
   }
 
   @Delete('deleteUser/:id')
-  deleteUser(id: string) {
-    return this.userService.deleteUser(id);
+  async deleteUser(@Param('id') id: string, @Res() res: Response) {
+    await this.userService.deleteUser(id);
+    return res.json({
+      statusCode: 200,
+      success: true,
+      message: 'User deleted successfully',
+    });
   }
 }
