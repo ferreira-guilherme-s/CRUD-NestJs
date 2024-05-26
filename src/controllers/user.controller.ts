@@ -93,13 +93,14 @@ export class UserController {
     const { name, email, password } = user;
     try {
       await this.userService.addUser(name, email, password);
-      return res.json({
+      return res.status(201).json({
         statusCode: 201,
         success: true,
         message: 'User created successfully',
       });
     } catch (error) {
-      return res.json({
+      console.log(error);
+      return res.status(400).json({
         statusCode: 400,
         success: false,
         error: 'User not created',
