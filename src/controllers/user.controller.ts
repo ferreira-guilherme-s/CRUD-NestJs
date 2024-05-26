@@ -92,9 +92,9 @@ export class UserController {
     user: CreateUserDTO,
     @Res() res: Response,
   ) {
-    const { name, email, password } = user;
+    const { name, email, password, userType } = user;
     try {
-      await this.userService.addUser(name, email, password);
+      await this.userService.addUser(name, email, password, userType);
       return res.status(201).json({
         statusCode: 201,
         success: true,
