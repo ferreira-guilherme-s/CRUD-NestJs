@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { CommonData } from '../user.module';
 
-@Entity('userTest')
+@Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -14,6 +14,9 @@ export class User {
 
   @Column()
   password: string;
+
+  @Column({ default: 'user' })
+  userType: string;
 
   @Column(() => CommonData, { prefix: '' })
   data: CommonData;

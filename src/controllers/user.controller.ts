@@ -13,7 +13,7 @@ import { UserService } from '../services/user.service';
 import { CreateUserDTO } from 'src/dtos/create-user-dto';
 import { LoginDTO } from 'src/dtos/login-dto';
 import { Response } from 'express';
-import { User } from 'src/models/entitites/user.entity';
+import { User } from 'src/models/entities/user.entity';
 import { ResetPasswordDto } from 'src/dtos/reset-password-dto';
 
 @Controller('users')
@@ -28,18 +28,20 @@ export class UserController {
     try {
       const { email, password } = loginDTO;
       console.log(email, password);
-      const token = await this.userService.login(email, password);
-      if (!token || token === null) {
+      const result = await this.userService.login(email, password);
+      if (!result || result === null) {
         return res.status(401).json({
           statusCode: 401,
           success: false,
           message: 'Invalid email or password',
         });
       }
+      const { token, user } = result;
       return res.status(200).json({
         statusCode: 200,
         success: true,
         token,
+        user,
       });
     } catch (error) {
       console.error(error);

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from 'src/models/entitites/user.entity';
+import { User } from 'src/models/entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { ResetPasswordDto } from 'src/dtos/reset-password-dto';
@@ -24,28 +24,34 @@ export class UserService {
     const idReplace = id.replace(`:`, '');
     return this.userRepository.findOne({
       where: { id: idReplace },
-      select: ['id', 'name', 'email'],
+      select: ['id', 'name', 'email', 'userType'],
     });
   }
 
   //Função de inserção de usuário
-  async addUser(name: string, email: string, password: string): Promise<User> {
+  async addUser(
+    name: string,
+    email: string,
+    password: string,
+    userType: string,
+  ): Promise<User> {
     const passwordHash = bcrypt.hashSync(password, 10);
     const user = new User();
     user.name = name;
     user.email = email;
     user.password = passwordHash;
+    user.userType = userType;
 
     return await this.userRepository.save(user);
   }
 
   updateUser(id: string, user: User) {
     const userId = id.replace(`:`, '');
-    const { name, email } = user;
+    const { userType, name, email } = user;
     if (name !== undefined && email !== undefined) {
       return this.userRepository.update(
         { id: userId },
-        { name: name, email: email },
+        { name: name, email: email, userType: userType },
       );
     } else if (name !== undefined && email === undefined) {
       return this.userRepository.update({ id: userId }, { name: name });
@@ -60,7 +66,10 @@ export class UserService {
   }
 
   //Função de login
-  async login(email: string, password: string): Promise<string | null> {
+  async login(
+    email: string,
+    password: string,
+  ): Promise<{ token: string; user: Partial<User> } | null> {
     const user = await this.findOneByEmail(email);
     if (user === undefined) {
       return null;
@@ -72,10 +81,12 @@ export class UserService {
     }
 
     const token = jwt.sign({ id: user.id }, process.env.TOKEN_SECRET, {
-      expiresIn: '1m',
+      expiresIn: '1h',
     });
 
-    return token;
+    const { id, userType } = user;
+
+    return { token, user: { id, userType } };
   }
 
   async resetPassword(user: ResetPasswordDto) {
